@@ -1,26 +1,38 @@
+
 pipeline {
     agent any
-    options { timestamps() }
+
+    options {
+        timestamps()
+    }
+
     environment {
         IMAGE_NAME = 'largest-three-java:latest'
+        PATH+DOCKER = '/usr/local/bin'
     }
+
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
+
         stage('Compile and Test') {
             steps {
                 sh 'chmod +x scripts/test.sh'
                 sh './scripts/test.sh'
             }
         }
+
         stage('Build Docker Image') {
             steps {
+                sh 'which docker'
+                sh 'docker --version'
                 sh 'docker build -t ${IMAGE_NAME} .'
             }
         }
+
         stage('Deploy to Kubernetes') {
             steps {
                 sh 'kubectl apply -f k8s/deployment.yaml'
@@ -31,13 +43,15 @@ pipeline {
             }
         }
     }
+
     post {
         success {
-            echo 'SUCCESS: Java tests passed and the application was deployed to Kubernetes.'
+            echo 'SUCCESS: Java tests passed and application deployed to Kubernetes.'
             echo 'Open http://localhost:30080'
         }
+
         failure {
-            echo 'Pipeline failed. Review the stage output in Console Output.'
+            echo 'Pipeline failed. Review Console Output.'
         }
     }
 }
