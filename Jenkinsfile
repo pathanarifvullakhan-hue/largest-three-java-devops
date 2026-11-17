@@ -8,10 +8,11 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'largest-three-java:latest'
-        PATH+DOCKER = '/usr/local/bin'
+        PATH = "/usr/local/bin:${env.PATH}"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -33,6 +34,12 @@ pipeline {
             }
         }
 
+        stage('Verify Docker Image') {
+            steps {
+                sh 'docker images'
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 sh 'kubectl apply -f k8s/deployment.yaml'
@@ -46,12 +53,14 @@ pipeline {
 
     post {
         success {
-            echo 'SUCCESS: Java tests passed and application deployed to Kubernetes.'
-            echo 'Open http://localhost:30080'
+            echo 'SUCCESS: Java tests passed!'
+            echo 'SUCCESS: Docker image built!'
+            echo 'SUCCESS: Application deployed to Kubernetes!'
+            echo 'Application URL: http://localhost:30080'
         }
 
         failure {
-            echo 'Pipeline failed. Review Console Output.'
+            echo 'Pipeline failed. Check Console Output for details.'
         }
     }
 }
