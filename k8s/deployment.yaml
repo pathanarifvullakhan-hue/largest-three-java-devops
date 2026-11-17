@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: largest-three-app
+  labels:
+    app: largest-three-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: largest-three-app
+  template:
+    metadata:
+      labels:
+        app: largest-three-app
+    spec:
+      containers:
+        - name: largest-three-app
+          image: largest-three-java:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
